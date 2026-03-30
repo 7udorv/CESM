@@ -17,9 +17,7 @@ def CESM(count_dict, original_distances_dict, changed_distances_dict, r, min_pre
 
         changed_instances = changed_distances_dict[c_distances_list[i]]
 
-        Sig_ESP, P2 = BIESP_Col_baseline.Biesp_Col(instances2, changed_instances, r, min_ei, min_prev, P1, count2)
-        # print('P2',P2)
-
+        Sig_ESP, P2 = M2EC.m2ec(instances2, changed_instances, r, min_ei, min_prev, P1, count2)
         ESPs[i] = Sig_ESP
         P1 = P2
         count1 = count2
@@ -33,7 +31,6 @@ def CESM(count_dict, original_distances_dict, changed_distances_dict, r, min_pre
         return
 
     n = 0
-    print(ESPs)
     P = {}
     start_time = time.perf_counter()
     while True:
@@ -41,9 +38,6 @@ def CESM(count_dict, original_distances_dict, changed_distances_dict, r, min_pre
         if n == 0:
             C1 = [ESPs[n][cesp]['sequence'] for cesp in ESPs[n]]
         C2 = sorted([ESPs[n + 1][cesp]['sequence'] for cesp in ESPs[n + 1]])
-        # 计算ISI
-        # print('C1',C1)
-        # print('C2',C2)
         for c1 in C1:
             flag_connectable = False
             c1_ep = c1.split('→')[-1]
@@ -60,7 +54,6 @@ def CESM(count_dict, original_distances_dict, changed_distances_dict, r, min_pre
                         flag_overlap = True
                         esp1_s = '→'.join(c1.rsplit('→', maxsplit=2)[-2:])
                         esp1 = [key for key in ESPs[n] if ESPs[n][key]['sequence'] == esp1_s][0]
-
                         esp2 = [key for key in ESPs[n + 1] if ESPs[n + 1][key]['sequence'] == c2][0]
                         op_dict = {}
                         ep_dict = {}
@@ -83,15 +76,13 @@ def CESM(count_dict, original_distances_dict, changed_distances_dict, r, min_pre
                                         op_dict[f1] = ins_op
 
                             IOI = len(ep_dict[f1] & op_dict[f1]) / len(ep_dict[f1])
-                            if IOI < min_overlap:
-                                flag_overlap = False
+                            if IOI < min_ioi:
+                                flag_ioi = False
                                 break
                         if flag_ioi:
-                            print(ISI)
                             parts1 = c1.split("→")
                             parts2 = c2.split("→")
                             s = "→".join(parts1 + [parts2[-1]])
-                            print('s',s)
                             LS.add(s)
                         else: 
                             if n not in P:
