@@ -16,7 +16,7 @@ def CESM_IER(count_dict, original_distances_dict, changed_distances_dict, r, min
 
         changed_instances = changed_distances_dict[c_distances_list[i]]
 
-        Sig_ESP, P2 = BIESP_Col_incremental.Biesp_Col_incre(instances2, changed_instances, r, min_ei, min_prev, P1, count2)
+        Sig_ESP, P2 = M2EC_IP.m2ec_ip(instances2, changed_instances, r, min_ei, min_prev, P1, count2)
         # print('end')
         ESPs[i] = Sig_ESP
         P1 = copy.deepcopy(P2)
@@ -36,9 +36,6 @@ def CESM_IER(count_dict, original_distances_dict, changed_distances_dict, r, min
         if n == 0:
             C1 = [ESPs[n][cesp]['sequence'] for cesp in ESPs[n]]
         C2 = sorted([ESPs[n + 1][cesp]['sequence'] for cesp in ESPs[n + 1]])
-        # 计算ISI
-        # print('C1',C1)
-        # print('C2',C2)
         for c1 in C1:
             flag_connectable = False
             c1_ep = c1.split('→')[-1]
@@ -55,7 +52,6 @@ def CESM_IER(count_dict, original_distances_dict, changed_distances_dict, r, min
                         flag_overlap = True
                         esp1_s = '→'.join(c1.rsplit('→', maxsplit=2)[-2:])
                         esp1 = [key for key in ESPs[n] if ESPs[n][key]['sequence'] == esp1_s][0]
-
                         esp2 = [key for key in ESPs[n + 1] if ESPs[n + 1][key]['sequence'] == c2][0]
                         op_dict = {}
                         ep_dict = {}
@@ -68,7 +64,6 @@ def CESM_IER(count_dict, original_distances_dict, changed_distances_dict, r, min
                                     else:
                                         ins_ep = set(ins.rstrip("+-") for ins in ins_ep)
                                         ep_dict[f1] = ins_ep
-
                             for f3 in esp2.split(','):
                                 if f1 == f3.rstrip("+-"):
                                     ins_op = ESPs[n + 1][esp2][f3]
@@ -77,7 +72,6 @@ def CESM_IER(count_dict, original_distances_dict, changed_distances_dict, r, min
                                     else:
                                         ins_op = set(ins.rstrip("+-") for ins in ins_op)
                                         op_dict[f1] = ins_op
-
                             IOI = len(ep_dict[f1] & op_dict[f1]) / len(ep_dict[f1])
                             if IOI < min_ioi:
                                 flag_ioi = False
@@ -85,9 +79,7 @@ def CESM_IER(count_dict, original_distances_dict, changed_distances_dict, r, min
                         if flag_ioi:
                             parts1 = c1.split("→")
                             parts2 = c2.split("→")
-
                             s = "→".join(parts1 + [parts2[-1]])
-                            # print('s',s)
                             LS.add(s)
                         else: 
                             if n not in P:
